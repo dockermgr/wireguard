@@ -179,12 +179,12 @@ ADD_SYSCTL="net.ipv4.conf.all.src_valid_mark=1 net.ipv4.ip_forward=1"
 ADD_SYSCTL+=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Define additional mounts [ /dir:/dir ]
-ADDITIONAL_MOUNTS="$LOCAL_CONFIG_DIR:/etc/wireguard:z "
+ADDITIONAL_MOUNTS="$LOCAL_CONFIG_DIR:/etc/wireguard:z /lib/modules:/lib/modules:ro"
 ADDITIONAL_MOUNTS+=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Define additional variables [ myvar=var ]
 ADDITION_ENV="WG_HOST=vpn.casjay.net PASSWORD=${PASSWORD:-wg_password} "
-ADDITION_ENV+="WG_DEFAULT_DNS='141.148.153.228, ' "
+ADDITION_ENV+="WG_DEFAULT_DNS='141.148.153.228' "
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Define additional devices [ /dev:/dev ]
 ADDITION_DEVICES=""
