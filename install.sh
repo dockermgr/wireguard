@@ -139,7 +139,7 @@ HOST_LOCAL_ONLY="no"
 LOCAL_IP="127.0.0.1"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set this to 0.0.0.0 to listen on all or specify addresses
-DEFINE_LISTEN=""
+DEFINE_LISTEN="0.0.0.0"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set the network type - bridge,host - default is bridge
 HOST_NETWORK_TYPE="bridge"
@@ -233,6 +233,9 @@ fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if [ -z "$HUB_IMAGE_URL" ] || [ "$HUB_IMAGE_URL" = " " ]; then
   printf_exit "Please set the url to the containers image"
+elif echo "$HUB_IMAGE_URL" | grep -q ':'; then
+  HUB_IMAGE_URL="$(echo "$HUB_IMAGE_URL" | awk -F':' '{print $1}')"
+  HUB_IMAGE_TAG="$(echo "$HUB_IMAGE_URL" | awk -F':' '{print $2}')"
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Script options IE: --help
