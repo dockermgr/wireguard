@@ -1,6 +1,6 @@
 ## 👋 Welcome to README.md 🚀  
 
-Description  
+wireguard README  
   
   
 ## Requires scripts to be installed  

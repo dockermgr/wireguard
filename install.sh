@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-##@Version           :  202210211246-git
+##@Version           :  202210211537-git
 # @@Author           :  Jason Hempstead
 # @@Contact          :  jason@casjaysdev.com
 # @@License          :  LICENSE.md
 # @@ReadME           :  install.sh --help
 # @@Copyright        :  Copyright: (c) 2022 Jason Hempstead, Casjays Developments
-# @@Created          :  Friday, Oct 21, 2022 12:46 EDT
+# @@Created          :  Friday, Oct 21, 2022 15:37 EDT
 # @@File             :  install.sh
 # @@Description      :
 # @@Changelog        :  New script
@@ -19,7 +19,7 @@
 # @@Template         :  installers/dockermgr
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 APPNAME="wireguard"
-VERSION="202210211246-git"
+VERSION="202210211537-git"
 HOME="${USER_HOME:-$HOME}"
 USER="${SUDO_USER:-$USER}"
 RUN_USER="${SUDO_USER:-$USER}"
@@ -139,7 +139,7 @@ HOST_LOCAL_ONLY="no"
 LOCAL_IP="127.0.0.1"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set this to 0.0.0.0 to listen on all or specify addresses
-DEFINE_LISTEN="0.0.0.0"
+DEFINE_LISTEN=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set the network type - bridge,host - default is bridge
 HOST_NETWORK_TYPE="bridge"
@@ -166,25 +166,31 @@ HOST_X11_SOCKET="/tmp/.X11-unix"
 HOST_X11_XAUTH="$HOME/.Xauthority"
 CONTAINER_X11_XAUTH="/home/x11user/.Xauthority"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Set container username and password and the env name [Default to -e username=name -e password=pass]
+CONTAINER_USER_NAME=""
+CONTAINER_USER_PASS="wg_password"
+CONTAINER_ENV_USER_NAME=""
+CONTAINER_ENV_USER_PASS=""
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Mount docker socket [pathToSocket]
 DOCKER_SOCKET_ENABLED="no"
 DOCKER_SOCKET_MOUNT="/var/run/docker.sock"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set capabilites
-ADD_CAPABILITIES="SYS_ADMIN SYS_MODULE NET_ADMIN"
+ADD_CAPABILITIES="SYS_ADMIN SYS_MODULE NET_ADMIN  "
 ADD_CAPABILITIES+=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set sysctl
-ADD_SYSCTL="net.ipv4.conf.all.src_valid_mark=1 net.ipv4.ip_forward=1"
+ADD_SYSCTL="net.ipv4.conf.all.src_valid_mark=1 net.ipv4.ip_forward=1 "
 ADD_SYSCTL+=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Define additional mounts [ /dir:/dir ]
-ADDITIONAL_MOUNTS="$LOCAL_CONFIG_DIR:/etc/wireguard:z /lib/modules:/lib/modules:ro"
+ADDITIONAL_MOUNTS="$LOCAL_CONFIG_DIR:/etc/wireguard:z /lib/modules:/lib/modules:ro "
 ADDITIONAL_MOUNTS+=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Define additional variables [ myvar=var ]
-ADDITION_ENV="WG_HOST=vpn.casjay.net PASSWORD=${PASSWORD:-wg_password} "
-ADDITION_ENV+="WG_DEFAULT_DNS='141.148.153.228' "
+ADDITION_ENV="WG_HOST=\"vpn.casjay.net\" PASSWORD=\"${PASSWORD:-$CONTAINER_USER_PASS}\" WG_DEFAULT_DNS=\"141.148.153.228\" "
+ADDITION_ENV+=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Define additional devices [ /dev:/dev ]
 ADDITION_DEVICES=""
@@ -204,12 +210,8 @@ CONTAINER_HTTPS_PORT=""
 CONTAINER_SERVICE_PORT=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Add Add sevicee port [port] or [port:port] - LISTEN will be added if defined [DEFINE_LISTEN]
-CONTAINER_ADD_CUSTOM_PORT="51820/udp"
+CONTAINER_ADD_CUSTOM_PORT="51821/udp"
 CONTAINER_ADD_CUSTOM_PORT+=""
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Show user info message
-POST_SHOW_MESSAGE_USER=""
-POST_SHOW_MESSAGE_PASS=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Show post install message
 POST_SHOW_MESSAGE_FINISHED=""
@@ -266,10 +268,10 @@ DOCKER_OPTS=""
 NGINX_LISTEN_OPTS=""
 HOST_IP="${CURRIP4:-$LOCAL_IP}"
 HOST_TIMEZONE="${TZ:-$TIMEZONE}"
-DEFINE_LISTEN="${DEFINE_LISTEN:-}"
 HOST_LISTEN_ADDR="${DEFINE_LISTEN:-$HOST_IP}"
 CONTAINER_SHM_SIZE="${CONTAINER_SHM_SIZE:-64M}"
 HOST_SERVICE_PORT="${CONTAINER_SERVICE_PORT//:*/}"
+DEFINE_LISTEN="${DEFINE_LISTEN:-$HOST_LISTEN_ADDR}"
 CONTAINER_HTTP_PROTO="${CONTAINER_HTTP_PROTO:-http}"
 HOST_NETWORK_TYPE="--network ${HOST_NETWORK_TYPE:-bridge}"
 POST_SHOW_MESSAGE_FINISHED="${POST_SHOW_MESSAGE_FINISHED:-}"
@@ -288,8 +290,11 @@ CONTAINER_HOSTNAME="${CONTAINER_HOSTNAME:-$APPNAME.$CONTAINER_DOMAINNAME}"
 [ -n "$HOST_TIMEZONE" ] || HOST_TIMEZONE="America/New_York"
 [ -n "$HOST_WEB_PORT" ] && HOST_PORT="${HOST_WEB_PORT//:*/}"
 [ -n "$DEFINE_LISTEN" ] && DEFINE_LISTEN="${DEFINE_LISTEN//:*/}:" || DEFINE_LISTEN=""
+[ -z "$CONTAINER_USER_PASS" ] || ADDITION_ENV+="${CONTAINER_ENV_USER_PASS:-password}=$CONTAINER_USER_PASS "
+[ -z "$CONTAINER_USER_NAME" ] || ADDITION_ENV+="${CONTAINER_ENV_USER_NAME:-username}=$CONTAINER_USER_NAME "
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 PRETTY_PORT="${HOST_SERVICE_PORT:-$HOST_PORT}"
+PRETTY_PORT="${PRETTY_PORT//\/*/}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 [ "$CONTAINER_TTY" = "yes" ] && DOCKER_OPTS+="--tty " || CONTAINER_TTY=""
 [ "$CONTAINER_INTERACTIVE" = "yes" ] && DOCKER_OPTS+="--interactive " || CONTAINER_INTERACTIVE=""
@@ -299,7 +304,7 @@ PRETTY_PORT="${HOST_SERVICE_PORT:-$HOST_PORT}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Setup display if enabled
 if [ "$CONTAINER_DISPLAY" = "yes" ]; then
-  ADDITION_ENV="DISPLAY=:${DISPLAY//*:/} "
+  ADDITION_ENV+="DISPLAY=:${DISPLAY//*:/} "
   ADDITIONAL_MOUNTS+="${HOST_X11_SOCKET:-/tmp/.X11-unix}:/tmp/.X11-unix " ||
     if [ -n "$HOST_X11_XAUTH" ] && [ -n "$CONTAINER_X11_XAUTH" ]; then
       ADDITIONAL_MOUNTS+="$HOST_X11_XAUTH:$CONTAINER_X11_XAUTH "
@@ -374,11 +379,7 @@ for port in $CONTAINER_HTTP_PORT $CONTAINER_SERVICE_PORT $CONTAINER_HTTPS_PORT $
   [ "$port" = " " ] && port=""
   if [ -n "$port" ]; then
     echo "$port" | grep -q ':' || port="${port//\/*/}:$port"
-    if [ -n "$DEFINE_LISTEN" ]; then
-      SET_PORT+="--publish $DEFINE_LISTEN$port "
-    else
-      SET_PORT+="--publish $port "
-    fi
+    SET_PORT+="--publish $DEFINE_LISTEN$port "
   fi
 done
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -488,8 +489,8 @@ if docker ps -a | grep -qs "$APPNAME"; then
     printf_cyan "Service is listening on $HOST_LISTEN_ADDR:$PRETTY_PORT or $CONTAINER_HOSTNAME:$PRETTY_PORT"
     printf_yellow "and should be available at: $NGINX_PROXY or $CONTAINER_HTTP_PROTO//$CONTAINER_HOSTNAME:$PRETTY_PORT"
   fi
-  [ -z "$POST_SHOW_MESSAGE_USER" ] || printf_cyan "Username is:  $POST_SHOW_MESSAGE_USER"
-  [ -z "$POST_SHOW_MESSAGE_PASS" ] || printf_purple "Password is:  $POST_SHOW_MESSAGE_PASS"
+  [ -z "$CONTAINER_USER_NAME" ] || printf_cyan "Username is:  $CONTAINER_USER_NAME"
+  [ -z "$CONTAINER_USER_PASS" ] || printf_purple "Password is:  $CONTAINER_USER_PASS"
   [ -z "$POST_SHOW_MESSAGE_FINISHED" ] || printf_green "$POST_SHOW_MESSAGE_FINISHED"
 else
   [ "$ERROR_LOG" = "true" ] && printf_yellow "Errors logged to ${TMP:-/tmp}/$APPNAME.err.log"
