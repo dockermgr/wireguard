@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-##@Version           :  202305101715-git
+##@Version           :  202305101743-git
 # @@Author           :  Jason Hempstead
 # @@Contact          :  jason@casjaysdev.com
 # @@License          :  LICENSE.md
 # @@ReadME           :  install.sh --help
 # @@Copyright        :  Copyright: (c) 2023 Jason Hempstead, Casjays Developments
-# @@Created          :  Wednesday, May 10, 2023 17:15 EDT
+# @@Created          :  Wednesday, May 10, 2023 17:43 EDT
 # @@File             :  install.sh
 # @@Description      :  Container installer script for wireguard
 # @@Changelog        :  New script
@@ -27,7 +27,7 @@
 # shellcheck disable=SC2317
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 APPNAME="wireguard"
-VERSION="202305101715-git"
+VERSION="202305101743-git"
 REPO_BRANCH="${GIT_REPO_BRANCH:-main}"
 HOME="${USER_HOME:-$HOME}"
 USER="${SUDO_USER:-$USER}"
@@ -118,6 +118,7 @@ __is_private_ip() { grep -E '192\.168\.[0-255]\.[0-255]|10\.[0-255]\.[0-255]\.[0
 __docker_gateway_ip() { sudo docker network inspect -f '{{json .IPAM.Config}}' ${HOST_DOCKER_NETWORK:-bridge} 2>/dev/null | jq -r '.[].Gateway' | grep -Ev '^$|null' | head -n1 | grep '^' || return 1; }
 __docker_net_create() { __docker_net_ls | grep -q "$HOST_DOCKER_NETWORK" && return 0 || { docker network create -d bridge --attachable $HOST_DOCKER_NETWORK &>/dev/null && __docker_net_ls | grep -q "$HOST_DOCKER_NETWORK" && echo "$HOST_DOCKER_NETWORK" && return 0 || return 1; }; }
 __local_lan_ip() { __ifconfig $SET_LAN_DEV | grep -w 'inet' | awk -F ' ' '{print $2}' | __is_private_ip | head -n1 | grep '^' || ip address show $SET_LAN_DEV 2>&1 | grep 'inet ' | awk -F ' ' '{print $2}' | sed 's|/.*||g' | __is_private_ip | grep -v '^$' | head -n1 | grep '^' || echo "$CURRENT_IP_4" | grep '^' || return 1; }
+__my_default_lan_address() { __ifconfig $SET_LAN_DEV | grep -w 'inet' | awk -F ' ' '{print $2}' | head -n1 | grep '^' || ip address show $SET_LAN_DEV 2>&1 | grep 'inet ' | awk -F ' ' '{print $2}' | sed 's|/.*||g' | grep -v '^$' | head -n1 | grep '^' || echo "$CURRENT_IP_4" | grep '^' || return 1; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Ensure docker is installed and running
 __docker_check || __docker_init
@@ -375,7 +376,7 @@ CONTAINER_DATABASE_LENGTH_NORMAL="20"
 # Set a username and password - [user] [pass/random]
 CONTAINER_USER_NAME=""
 CONTAINER_USER_PASS="random"
-CONTAINER_PASS_LENGTH="24"
+CONTAINER_PASS_LENGTH="32"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set container username and password env name - [CONTAINER_ENV_USER_NAME=$CONTAINER_USER_NAME]
 CONTAINER_ENV_USER_NAME=""
@@ -449,17 +450,15 @@ DOCKERMGR_ENABLE_INSTALL_SCRIPT="yes"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set custom container enviroment variables - [--env MYVAR="VAR"]
 __custom_docker_env() {
-  cat <<EOF | tee | grep -v '^$' | sed 's|^|--env |g' | tr '\n' ' ' | __remove_extra_spaces
+  cat <<EOF | tee
 PORT=80
 WG_MTU=1420
 WG_PERSISTENT_KEEPALIVE=60
-WG_DEFAULT_ADDRESS=10.13.13.0
-WG_HOST=$(__local_lan_ip)
-WG_DEFAULT_DNS='1.1.1.1,8.8.8.8'
-WG_ALLOWED_IPS='0.0.0.0/0,::/0'
+WG_HOST=$(__my_default_lan_address)
+WG_DEFAULT_DNS='1.1.1.1, 8.8.8.8'
+WG_ALLOWED_IPS='0.0.0.0/0, ::/0'
 
 EOF
-  echo ''
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # this function will create an env file in the containers filesystem - see CONTAINER_ENV_FILE_ENABLED
@@ -1794,7 +1793,7 @@ if [ -n "$ENV_PORTS" ]; then
 fi
 unset DOCKER_SET_PORTS_ENV_TMP ENV_PORTS SET_PORTS_ENV_TMP
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-DOCKER_CUSTOM_ARRAY="$(__custom_docker_env | grep '\--')"
+DOCKER_CUSTOM_ARRAY="$(__custom_docker_env | grep -Ev '^$|^#' | sed 's|^|--env |g' | grep '\--' | tr '\n' ' ' | __remove_extra_spaces)"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Clean up variables
 DOCKER_SET_PUBLISH="$(printf '%s\n' "${DOCKER_SET_TMP_PUBLISH[@]}" | sort -Vu | tr '\n' ' ')" # ensure only one
@@ -1824,7 +1823,9 @@ __dockermgr_variables >"$DOCKERMGR_CONFIG_DIR/env/$APPNAME.conf"
 __dockermgr_password_variables >"$DOCKERMGR_CONFIG_DIR/secure/$APPNAME"
 chmod -f 600 "$DOCKERMGR_CONFIG_DIR/secure/$APPNAME"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-__custom_docker_env | tr ' ' '\n' | sed 's|^--.*||g' | grep -v '^$' >"$DOCKERMGR_CONFIG_DIR/env/$APPNAME.custom.conf"
+if [ ! -f "$DOCKERMGR_CONFIG_DIR/env/$APPNAME.custom.conf" ]; then
+  __custom_docker_env | sed 's|^--.*||g' | grep -Ev '^$|^#' >"$DOCKERMGR_CONFIG_DIR/env/$APPNAME.custom.conf"
+fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Main progam
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
