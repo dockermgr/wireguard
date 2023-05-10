@@ -12,8 +12,8 @@
 # @@Description      :  Container installer script for wireguard
 # @@Changelog        :  New script
 # @@TODO             :  Completely rewrite/refactor/variable cleanup
-# @@Other            :  
-# @@Resource         :  
+# @@Other            :
+# @@Resource         :
 # @@Terminal App     :  no
 # @@sudo/root        :  no
 # @@Template         :  installers/dockermgr
@@ -313,7 +313,7 @@ HOST_NGINX_HTTPS_PORT="443"
 HOST_NGINX_UPDATE_CONF="yes"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Enable this if container is running a webserver - [yes/no] [internalPort] [yes/no] [yes/no] [listen]
-CONTAINER_WEB_SERVER_ENABLED="no"
+CONTAINER_WEB_SERVER_ENABLED="yes"
 CONTAINER_WEB_SERVER_INT_PORT="80"
 CONTAINER_WEB_SERVER_SSL_ENABLED="no"
 CONTAINER_WEB_SERVER_AUTH_ENABLED="no"
@@ -326,7 +326,7 @@ CONTAINER_WEB_SERVER_VHOSTS=""
 CONTAINER_ADD_RANDOM_PORTS=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Add custom port -  [exter:inter] or [listen:exter:inter/[tcp,udp]] random:[inter]
-CONTAINER_ADD_CUSTOM_PORT=""
+CONTAINER_ADD_CUSTOM_PORT="51820:51820/udp"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # mail settings - [yes/no] [user] [domainname] [server]
 CONTAINER_EMAIL_ENABLED=""
@@ -374,12 +374,12 @@ CONTAINER_DATABASE_LENGTH_NORMAL="20"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set a username and password - [user] [pass/random]
 CONTAINER_USER_NAME=""
-CONTAINER_USER_PASS=""
+CONTAINER_USER_PASS="random"
 CONTAINER_PASS_LENGTH="24"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set container username and password env name - [CONTAINER_ENV_USER_NAME=$CONTAINER_USER_NAME]
 CONTAINER_ENV_USER_NAME=""
-CONTAINER_ENV_PASS_NAME=""
+CONTAINER_ENV_PASS_NAME="PASSWORD"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Add the names of processes - [apache,mysql]
 CONTAINER_SERVICES_LIST=""
@@ -393,7 +393,7 @@ CONTAINER_MOUNT_CONFIG_ENABLED="yes"
 CONTAINER_MOUNT_CONFIG_MOUNT_DIR=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Define additional mounts - [/dir:/dir,/otherdir:/otherdir]
-CONTAINER_MOUNTS=""
+CONTAINER_MOUNTS="$LOCAL_CONFIG_DIR/wireguard:/etc/wireguard"
 CONTAINER_MOUNTS+=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Define additional devices - [/dev:/dev,/otherdev:/otherdev]
@@ -405,7 +405,7 @@ CONTAINER_ENV=""
 CONTAINER_ENV+=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set sysctl - []
-CONTAINER_SYSCTL=""
+CONTAINER_SYSCTL="net.ipv4.conf.all.src_valid_mark=1,net.ipv4.ip_forward=1"
 CONTAINER_SYSCTL+=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set capabilites - [NAME]
@@ -418,7 +418,7 @@ DOCKER_CAP_CHOWN="yes"
 DOCKER_CAP_NET_RAW="no"
 DOCKER_CAP_SYS_NICE="no"
 DOCKER_CAP_NET_ADMIN="no"
-DOCKER_CAP_SYS_MODULE="no"
+DOCKER_CAP_SYS_MODULE="yes"
 DOCKER_CAP_NET_BIND_SERVICE="no"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Define labels - [traefik.enable=true,label=label,otherlabel=label2]
@@ -450,6 +450,13 @@ DOCKERMGR_ENABLE_INSTALL_SCRIPT="yes"
 # Set custom container enviroment variables - [--env MYVAR="VAR"]
 __custom_docker_env() {
   cat <<EOF | tee | grep -v '^$' | sed 's|^|--env |g' | tr '\n' ' ' | __remove_extra_spaces
+PORT=80
+WG_MTU=1420
+WG_PERSISTENT_KEEPALIVE=60
+WG_DEFAULT_ADDRESS=10.13.13.0
+WG_HOST=$(__local_lan_ip)
+WG_DEFAULT_DNS='1.1.1.1,8.8.8.8'
+WG_ALLOWED_IPS='0.0.0.0/0,::/0'
 
 EOF
   echo ''
