@@ -12,8 +12,8 @@
 # @@Description      :  Container installer script for wireguard
 # @@Changelog        :  New script
 # @@TODO             :  Completely rewrite/refactor/variable cleanup
-# @@Other            :  
-# @@Resource         :  
+# @@Other            :
+# @@Resource         :
 # @@Terminal App     :  no
 # @@sudo/root        :  no
 # @@Template         :  installers/dockermgr
@@ -1202,6 +1202,7 @@ fi
 # set password length
 if [ -n "$CONTAINER_USER_ADMIN_PASS_HASH" ]; then
   if [ "$CONTAINER_USER_ADMIN_PASS_HASH" = "random" ]; then
+    CONTAINER_USER_ADMIN_PASS_RAW="$(__password 32)"
     CONTAINER_USER_ADMIN_PASS_RAW="${CONTAINER_USER_ADMIN_PASS_RAW:-$CONTAINER_USER_ADMIN_PASS_HASH}"
     CONTAINER_USER_ADMIN_PASS_HASH="${CONTAINER_USER_ADMIN_PASS_HASH:-$(__hash_password $CONTAINER_USER_ADMIN_PASS_RAW)}"
   fi
