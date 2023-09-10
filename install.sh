@@ -507,8 +507,7 @@ __custom_docker_env() {
   cat <<EOF | tee -p | grep -v '^$'
 WG_HOST=vpn.$HOSTNAME
 WG_PERSISTENT_KEEPALIVE='30'
-WG_DEFAULT_ADDRESS='10.8.0.x'
-WG_DEFAULT_DNS='10.0.0.1, 150.230.183.65, 1.1.1.1'
+WG_DEFAULT_DNS='10.0.0.1, 1.1.1.1'
 WG_ALLOWED_IPS='0.0.0.0/0, ::/0'
 WG_PRE_UP=''
 WG_POST_UP='iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE'
