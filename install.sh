@@ -315,7 +315,7 @@ HOST_NGINX_UPDATE_CONF="yes"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Enable this if container is running a webserver - [yes/no] [internalPort] [yes/no] [yes/no] [listen]
 CONTAINER_WEB_SERVER_ENABLED="yes"
-CONTAINER_WEB_SERVER_INT_PORT="80"
+CONTAINER_WEB_SERVER_INT_PORT="51821"
 CONTAINER_WEB_SERVER_SSL_ENABLED="no"
 CONTAINER_WEB_SERVER_AUTH_ENABLED="no"
 CONTAINER_WEB_SERVER_LISTEN_ON="127.0.0.10"
@@ -451,15 +451,12 @@ DOCKERMGR_ENABLE_INSTALL_SCRIPT="yes"
 # Set custom container enviroment variables - [--env MYVAR="VAR"]
 __custom_docker_env() {
   cat <<EOF | tee
-PORT=80
-WG_PATH=/config/wireguard
-WG_DEVICE=eth0
 WG_HOST=vpn.$HOSTNAME
-WG_PORT=51820
-WG_MTU=1420
-WG_PERSISTENT_KEEPALIVE=25
-WG_DEFAULT_ADDRESS=10.8.0.x
-WG_DEFAULT_DNS='150.230.183.65, 1.1.1.1'
+WG_PORT='51820'
+WG_MTU='1420'
+WG_PERSISTENT_KEEPALIVE='30'
+WG_DEFAULT_ADDRESS='10.8.0.x/16'
+WG_DEFAULT_DNS='10.0.0.1, 150.230.183.65, 1.1.1.1'
 WG_ALLOWED_IPS='0.0.0.0/0, ::/0'
 WG_PRE_UP=''
 WG_POST_UP='iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE'
