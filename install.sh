@@ -418,7 +418,7 @@ DOCKER_CAP_SYS_ADMIN="yes"
 DOCKER_CAP_CHOWN="yes"
 DOCKER_CAP_NET_RAW="no"
 DOCKER_CAP_SYS_NICE="no"
-DOCKER_CAP_NET_ADMIN="no"
+DOCKER_CAP_NET_ADMIN="yes"
 DOCKER_CAP_SYS_MODULE="yes"
 DOCKER_CAP_NET_BIND_SERVICE="no"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -452,12 +452,19 @@ DOCKERMGR_ENABLE_INSTALL_SCRIPT="yes"
 __custom_docker_env() {
   cat <<EOF | tee
 PORT=80
+WG_PATH=/config/wireguard
+WG_DEVICE=eth0
+WG_HOST=vpn.$HOSTNAME
+WG_PORT=51820
 WG_MTU=1420
-WG_PERSISTENT_KEEPALIVE=60
-WG_HOST=$(__my_default_lan_address)
+WG_PERSISTENT_KEEPALIVE=25
+WG_DEFAULT_ADDRESS=10.8.0.x
 WG_DEFAULT_DNS='150.230.183.65, 1.1.1.1'
 WG_ALLOWED_IPS='0.0.0.0/0, ::/0'
-
+WG_PRE_UP=''
+WG_POST_UP='iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE'
+WG_PRE_DOWN=''
+WG_POST_DOWN='iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE'
 EOF
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
