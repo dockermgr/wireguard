@@ -505,7 +505,7 @@ DOCKERMGR_ENABLE_INSTALL_SCRIPT="yes"
 # Set custom container enviroment variables - [MYVAR="VAR"]
 __custom_docker_env() {
   cat <<EOF | tee -p | grep -v '^$'
-WG_HOST="$CONTAINER_DOMAINNAME"
+WG_HOST="$(__public_ip)"
 WG_PERSISTENT_KEEPALIVE=30
 WG_ALLOWED_IPS="0.0.0.0/0, ::/0"
 WG_DEFAULT_DNS="1.1.1.1"
