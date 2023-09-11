@@ -507,12 +507,12 @@ __custom_docker_env() {
   cat <<EOF | tee -p | grep -v '^$'
 WG_HOST=vpn.$HOSTNAME
 WG_PERSISTENT_KEEPALIVE='30'
-WG_DEFAULT_DNS='10.0.0.1, 1.1.1.1'
 WG_ALLOWED_IPS='0.0.0.0/0, ::/0'
-WG_PRE_UP=''
-WG_POST_UP='iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE'
-WG_PRE_DOWN=''
-WG_POST_DOWN='iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE'
+WG_DEFAULT_DNS='150.230.183.65,129.153.223.16,1.1.1.1'
+#WG_PRE_UP=''
+#WG_POST_UP='iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE'
+#WG_PRE_DOWN=''
+#WG_POST_DOWN='iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE'
 EOF
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
