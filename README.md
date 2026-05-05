@@ -19,9 +19,9 @@ dockermgr update wireguard
 OR
 
 ```shell
-mkdir -p "$HOME/.local/share/srv/docker/wireguard/rootfs"
+mkdir -p "$HOME/.local/share/srv/docker/wireguard/volumes"
 git clone "https://github.com/dockermgr/wireguard" "$HOME/.local/share/CasjaysDev/dockermgr/wireguard"
-cp -Rfva "$HOME/.local/share/CasjaysDev/dockermgr/wireguard/rootfs/." "$HOME/.local/share/srv/docker/wireguard/rootfs/"
+cp -Rfva "$HOME/.local/share/CasjaysDev/dockermgr/wireguard/volumes/." "$HOME/.local/share/srv/docker/wireguard/volumes/"
 ```
 
 ## via command line  
@@ -58,9 +58,9 @@ docker run -d \
   --cap-add CAP_NET_ADMIN \
   --sysctl "net.ipv4.conf.all.src_valid_mark=1" \
   --sysctl "net.ipv4.ip_forward=1" \
-  --volume /root/.local/share/srv/docker/wireguard/rootfs/config/wireguard:/etc/wireguard \
-  --volume /root/.local/share/srv/docker/wireguard/rootfs/data:/data:z \
-  --volume /root/.local/share/srv/docker/wireguard/rootfs/config:/config:z \
+  --volume /root/.local/share/srv/docker/wireguard/volumes/config/wireguard:/etc/wireguard \
+  --volume /root/.local/share/srv/docker/wireguard/volumes/data:/data:z \
+  --volume /root/.local/share/srv/docker/wireguard/volumes/config:/config:z \
   --volume /lib/modules:/lib/modules \
   --publish 0.0.0.0:51820:51820/udp \
   --publish 127.0.0.10:50453:51821 \
@@ -92,9 +92,9 @@ services:
             - WG_PRE_DOWN=
             - WG_POST_DOWN='iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE'
         volumes:
-            - '/root/.local/share/srv/docker/wireguard/rootfs/config/wireguard:/etc/wireguard'
-            - '/root/.local/share/srv/docker/wireguard/rootfs/data:/data:z'
-            - '/root/.local/share/srv/docker/wireguard/rootfs/config:/config:z'
+            - '/root/.local/share/srv/docker/wireguard/volumes/config/wireguard:/etc/wireguard'
+            - '/root/.local/share/srv/docker/wireguard/volumes/data:/data:z'
+            - '/root/.local/share/srv/docker/wireguard/volumes/config:/config:z'
             - '/lib/modules:/lib/modules'
         ports:
             - '0.0.0.0:51820:51820/udp'
